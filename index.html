@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSV/JSON Anonymization Review Tool</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>CSV/JSON Anonymization Review Tool</h1>
+    <p>Upload → Review → Configure → Preview → Apply → Export</p>
+  </header>
+
+  <main>
+    <section class="card" id="uploadStep">
+      <h2>A) Upload</h2>
+      <input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv" />
+      <div id="summary" class="summary muted">No file loaded.</div>
+      <div id="globalProgress" class="progress hidden"><div id="globalBar"></div><span id="globalLabel">Idle</span></div>
+    </section>
+
+    <section class="card hidden" id="reviewStep">
+      <h2>B) Review</h2>
+      <div class="grid2">
+        <div>
+          <h3>Column Inspector</h3>
+          <input id="columnSearch" placeholder="Search columns..." />
+          <div id="columnList" class="column-list"></div>
+        </div>
+        <div>
+          <h3>Suggestions</h3>
+          <div id="suggestions" class="suggestions"></div>
+          <h3>Sensitive Detection</h3>
+          <div id="sensitivityPanel" class="suggestions"></div>
+        </div>
+      </div>
+      <h3>Sample Preview</h3>
+      <div class="table-wrap"><table id="previewTable"></table></div>
+    </section>
+
+    <section class="card hidden" id="rulesStep">
+      <h2>C) Rules</h2>
+      <div class="toolbar">
+        <label><input id="consistentTokens" type="checkbox" checked /> Consistent placeholders per original value</label>
+        <label><input id="preserveStructure" type="checkbox" checked /> Preserve removed columns as cleared (instead of deleting)</label>
+        <button id="resetConfig" type="button">Reset Config</button>
+        <button id="exportConfig" type="button">Export Config</button>
+        <label class="btnlike">Import Config <input id="importConfig" type="file" accept="application/json" hidden /></label>
+      </div>
+      <div id="rulesTable" class="rules-table"></div>
+    </section>
+
+    <section class="card hidden" id="previewStep">
+      <h2>D) Before vs After</h2>
+      <button id="runPreview" type="button">Generate Preview</button>
+      <div id="previewStats" class="summary muted"></div>
+      <div class="table-wrap split">
+        <div>
+          <h3>Before</h3>
+          <table id="beforeTable"></table>
+        </div>
+        <div>
+          <h3>After</h3>
+          <table id="afterTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="applyStep">
+      <h2>E) Apply + Export</h2>
+      <button id="applyAll" type="button">Apply to Full Dataset</button>
+      <button id="downloadCsv" type="button" disabled>Download Anonymized CSV</button>
+      <button id="downloadJson" type="button" disabled>Download Anonymized JSON</button>
+      <div id="applySummary" class="summary muted"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
