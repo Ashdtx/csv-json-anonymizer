@@ -4,7 +4,7 @@ A browser-based tool to review CSV/JSON datasets, configure anonymization rules,
 
 ## Features
 
-- Upload CSV or JSON (array of objects)
+- Upload CSV or JSON (array of objects, single object, or wrapped arrays like `data` / `rows` / `items`)
 - File summary (rows, columns)
 - Column inspector: type guess, empty ratio, distinct count, sample values
 - Suggestions: empty/mostly-empty/constant/technical/sensitive-like columns

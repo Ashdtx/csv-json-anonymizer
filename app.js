@@ -286,37 +286,57 @@ function showSteps() {
 
 function parseJSON(text) {
   const parsed = JSON.parse(text);
-  if (!Array.isArray(parsed)) throw new Error('JSON must be an array of objects');
-  return parsed;
+
+  if (Array.isArray(parsed)) return parsed;
+
+  if (parsed && typeof parsed === 'object') {
+    const candidateKeys = ['data', 'rows', 'items', 'records', 'result', 'results'];
+    for (const key of candidateKeys) {
+      if (Array.isArray(parsed[key])) return parsed[key];
+    }
+    return [parsed];
+  }
+
+  throw new Error('JSON must be an array, an object, or an object containing data/rows/items/records/result/results array');
 }
 
 el('fileInput').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const ext = (file.name.split('.').pop() || '').toLowerCase();
-  el('globalProgress').classList.remove('hidden');
-  el('globalBar').style.width = '10%';
-  el('globalLabel').textContent = 'Parsing file...';
 
-  if (ext === 'json') {
-    const text = await file.text();
-    state.rows = parseJSON(text);
-  } else {
-    const text = await file.text();
-    state.rows = Papa.parse(text, { header: true, skipEmptyLines: true, worker: true }).data;
+  try {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    el('globalProgress').classList.remove('hidden');
+    el('globalBar').style.width = '10%';
+    el('globalLabel').textContent = 'Parsing file...';
+
+    if (ext === 'json') {
+      const text = await file.text();
+      state.rows = parseJSON(text);
+    } else {
+      const text = await file.text();
+      state.rows = Papa.parse(text, { header: true, skipEmptyLines: true, worker: true }).data;
+    }
+
+    if (!state.rows.length) throw new Error('No rows found in the uploaded file');
+
+    state.columns = Array.from(new Set(state.rows.flatMap((r) => Object.keys(r))));
+    const suggestions = suggestColumns();
+    saveConfig();
+    el('summary').textContent = `Loaded ${file.name}. Rows: ${state.rows.length}. Columns: ${state.columns.length}.`;
+    renderColumnList(suggestions);
+    renderSuggestions(suggestions);
+    renderPreviewTable(state.rows.slice(0, 30), 'previewTable');
+    renderRules();
+    showSteps();
+    el('globalBar').style.width = '100%';
+    el('globalLabel').textContent = 'Ready';
+  } catch (err) {
+    console.error(err);
+    el('summary').textContent = `Could not parse ${file.name}: ${err?.message || err}`;
+    el('globalBar').style.width = '100%';
+    el('globalLabel').textContent = 'Parse error';
   }
-
-  state.columns = Array.from(new Set(state.rows.flatMap((r) => Object.keys(r))));
-  const suggestions = suggestColumns();
-  saveConfig();
-  el('summary').textContent = `Loaded ${file.name}. Rows: ${state.rows.length}. Columns: ${state.columns.length}.`;
-  renderColumnList(suggestions);
-  renderSuggestions(suggestions);
-  renderPreviewTable(state.rows.slice(0, 30), 'previewTable');
-  renderRules();
-  showSteps();
-  el('globalBar').style.width = '100%';
-  el('globalLabel').textContent = 'Ready';
 });
 
 el('columnSearch').addEventListener('input', () => renderColumnList(suggestColumns()));
